@@ -1,0 +1,22 @@
+#!/usr/bin/python3
+
+#usage: sigmap SIG1 SIG2 cmd ...
+#on receipt of SIG1, sends SIG2 to cmd
+#useful e.g. if a cmd won't exit on SIGPIPE, run:
+#    sigmap 13 9 cmd ...
+
+
+import sys
+import os
+import signal
+
+def map(inp, out, cmd):
+    child = os.fork()
+    if not child:
+        os.execlp(cmd[0], *cmd)
+    def handle():
+        os.kill(child, out)
+    signal.signal(inp, handle)
+
+    
+map(int(sys.argv[1]), int(sys.argv[2]), sys.argv[3:])
