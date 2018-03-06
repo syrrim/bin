@@ -1,0 +1,22 @@
+#!/usr/bin/python3
+
+FOLDER = "/mnt/A600648A00646373/Music/"
+
+import sys
+
+from pyftpdlib.authorizers import DummyAuthorizer, UnixAuthorizer
+from pyftpdlib.handlers import FTPHandler
+from pyftpdlib.servers import FTPServer
+
+authorizer = DummyAuthorizer()
+if len(sys.argv) > 1:
+    #                 username   password   folder
+    authorizer.add_user("anonymous", "", sys.argv[1])
+else:
+    authorizer.add_user("anonymous", "", FOLDER)
+
+handler = FTPHandler
+handler.authorizer = authorizer
+
+server = FTPServer(("0.0.0.0", 2121), handler) # :21 might be blocked
+server.serve_forever()
