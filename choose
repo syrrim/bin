@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# choose from a list of items on stdin, outputs choice to stdout
+# depends on jhawthorn/fzy
+
+filein=`mktemp -u`
+fileout=`mktemp -u`
+trap 'rm "$filein"' EXIT
+trap 'rm "$fileout"' EXIT
+
+mkfifo "$filein"
+
+cat <& 0 > "$filein" &
+IFS=$'\n' st -m bar -h 5 sh -c "< \"$filein\" fzy > \"$fileout\" " ||
+    exit 1
+cat "$fileout";
