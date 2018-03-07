@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# edit stdin in vim, then pass to stdout.
+# relies on syrrim/st
+
+VIMRC='
+    set noruler laststatus=0 shortmess=""
+    set backspace=indent,eol,start
+    noremap  <C-M> <Esc>:x<C-M>
+    inoremap <C-M> <Esc>:x<C-M>
+    map ZQ :cquit<C-M>" exits with errorcode
+'
+        
+file=`mktemp`
+trap 'rm "$file"' EXIT
+
+cat - > $file
+st -m bar -h 2 vim -u <(cat <<< "$VIMRC") -c "silent e $file" && 
+    cat "$file" ||
+    exit 1
