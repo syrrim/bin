@@ -1,16 +1,15 @@
 #!/bin/bash
 
-# choose from a list of items on stdin, outputs choice to stdout
-# depends on jhawthorn/fzy
+# choose from a list of items output by $1, sends as input to $2
+# runs st in the background in order to start faster
+# depends on jhawthorn/fzy and syrrim/st 
 
-filein=`mktemp -u`
-fileout=`mktemp -u`
-trap 'rm "$filein"' EXIT
-trap 'rm "$fileout"' EXIT
+DAEMON="/tmp/choose_daemon_$1"
 
-mkfifo "$filein"
+if [[ -e "$DAEMON" ]]; then 
+    kill -SIGRTMIN $(cat "$DAEMON")
+else
+    bash -c "st -m bar -h 5 sh -c \"$1 | fzy 1>&3\" 3>&1 | $2"
+fi
 
-cat <& 0 > "$filein" &
-IFS=$'\n' st -m bar -h 5 sh -c "< \"$filein\" fzy > \"$fileout\" " ||
-    exit 1
-cat "$fileout";
+nohup sh -c "st -m bar -h 5 -k \"$DAEMON\" sh -c \"$1 | fzy 1>&3\" 3>&1 | $2" &>/dev/null 0<&- &
